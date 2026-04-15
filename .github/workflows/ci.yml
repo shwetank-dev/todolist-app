@@ -1,11 +1,14 @@
 name: CI
 
 on:
+  push:
+    branches: [staging]
   pull_request:
+    branches: [main]
 
 jobs:
   check:
-    runs-on: ubuntu-lates
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
