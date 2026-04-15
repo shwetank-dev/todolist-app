@@ -5,9 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "npx tsx src/server.ts",
+    "dev": "tsx --env-file=.env src/server.ts",
     "lint": "biome check .",
-    "lint:fix": "biome check --write ."
+    "lint:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
