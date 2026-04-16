@@ -46,10 +46,12 @@ COPY pnpm-workspace.yaml ./
 COPY pnpm-lock.yaml ./
 COPY package.json ./
 COPY packages/server/package.json ./packages/server/
+COPY packages/shared/package.json ./packages/shared/
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # Copy compiled output from builder — source and devDeps stay behind.
 COPY --from=builder /app/packages/server/dist ./packages/server/dist
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 
 # Copy Prisma config and migrations needed for prisma migrate deploy at runtime.
 COPY packages/server/prisma.config.ts ./packages/server/
