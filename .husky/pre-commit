@@ -1,2 +1,2 @@
-pnpm biome check .
+pnpm lint
 pnpm --filter server typecheck

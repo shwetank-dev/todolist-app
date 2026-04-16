@@ -33,6 +33,9 @@ importers:
       '@prisma/client':
         specifier: ^7.7.0
         version: 7.7.0(prisma@7.7.0(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@6.0.2))(typescript@6.0.2)
+      '@todolist/shared':
+        specifier: workspace:*
+        version: link:../shared
       fastify:
         specifier: ^5.8.5
         version: 5.8.5
@@ -52,6 +55,16 @@ importers:
       prisma:
         specifier: ^7.7.0
         version: 7.7.0(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@6.0.2)
+
+  packages/shared:
+    dependencies:
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+    devDependencies:
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.2
 
 packages:
 
