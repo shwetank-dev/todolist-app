@@ -4,7 +4,7 @@ build:
 	docker build -t $(IMAGE) -f packages/server/Dockerfile .
 
 up:
-	docker compose up
+	docker compose up --build
 
 down:
 	docker compose down
