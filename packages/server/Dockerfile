@@ -14,7 +14,12 @@ COPY pnpm-workspace.yaml ./
 COPY pnpm-lock.yaml ./
 COPY package.json ./
 COPY packages/server/package.json ./packages/server/
+COPY packages/shared/package.json ./packages/shared/
 RUN pnpm install --frozen-lockfile
+
+# Build the shared package first — server imports from its dist/.
+COPY packages/shared ./packages/shared
+RUN pnpm --filter @todolist/shared run build
 
 # Copy schema and config, then generate the Prisma client.
 # Must happen before copying src/ — generated files land in src/generated/prisma.
