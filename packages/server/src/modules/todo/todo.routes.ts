@@ -12,16 +12,13 @@ import {
 } from "@todolist/shared/schemas/todo.schema";
 import type { FastifyPluginAsync } from "fastify";
 import { toSchema } from "../../shared/schema.js";
-
-const mockTodo: TodoDTO = {
-  id: "1",
-  title: "Buy groceries",
-  completed: false,
-  dueDate: null,
-  assignedTo: null,
-  category: null,
-  createdAt: new Date().toISOString(),
-};
+import {
+  createTodo,
+  deleteTodo,
+  getTodo,
+  getTodosForList,
+  updateTodo,
+} from "./todo.controller.js";
 
 export const todoRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get<{
@@ -34,8 +31,9 @@ export const todoRoutes: FastifyPluginAsync = async (fastify) => {
         response: { 200: toSchema(PaginatedResponseSchema(TodoDTOSchema)) },
       },
     },
-    async (_request, _reply) => {
-      return { data: [mockTodo], nextCursor: null };
+    async (request) => {
+      // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
+      return getTodosForList(request.params.id, request.user!.id);
     },
   );
 
@@ -52,15 +50,12 @@ export const todoRoutes: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request, reply) => {
-      const todo: TodoDTO = {
-        id: crypto.randomUUID(),
-        title: request.body.title,
-        completed: false,
-        dueDate: request.body.dueDate ?? null,
-        assignedTo: null,
-        category: null,
-        createdAt: new Date().toISOString(),
-      };
+      const todo = await createTodo(
+        request.params.id,
+        request.body,
+        // biome-ignore lint/style/noNonNullAssertion: <user authenticated>
+        request.user!.id,
+      );
       reply.status(201).send(todo);
     },
   );
@@ -70,13 +65,10 @@ export const todoRoutes: FastifyPluginAsync = async (fastify) => {
     Reply: { 200: TodoDTO };
   }>(
     "/todolists/:id/todos/:todoId",
-    {
-      schema: {
-        response: { 200: toSchema(TodoDTOSchema) },
-      },
-    },
-    async (_request, _reply) => {
-      return mockTodo;
+    { schema: { response: { 200: toSchema(TodoDTOSchema) } } },
+    async (request) => {
+      // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
+      return getTodo(request.params.todoId, request.user!.id);
     },
   );
 
@@ -92,14 +84,17 @@ export const todoRoutes: FastifyPluginAsync = async (fastify) => {
         response: { 200: toSchema(TodoDTOSchema) },
       },
     },
-    async (_request, _reply) => {
-      return mockTodo;
+    async (request) => {
+      // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
+      return updateTodo(request.params.todoId, request.body, request.user!.id);
     },
   );
 
   fastify.delete<{ Params: { id: string; todoId: string } }>(
     "/todolists/:id/todos/:todoId",
-    async (_request, reply) => {
+    async (request, reply) => {
+      // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
+      await deleteTodo(request.params.todoId, request.user!.id);
       reply.status(204).send();
     },
   );

@@ -1,60 +1,31 @@
+import bcrypt from "bcrypt";
 import { prisma } from "../src/infra/db.js";
 
 async function main() {
-  // Create users
+  const passwordHash = await bcrypt.hash("password123", 12);
+
   const alice = await prisma.user.create({
-    data: {
-      email: "alice@example.com",
-      name: "Alice",
-    },
+    data: { email: "alice@example.com", name: "Alice", passwordHash },
   });
 
   const bob = await prisma.user.create({
-    data: {
-      email: "bob@example.com",
-      name: "Bob",
-    },
+    data: { email: "bob@example.com", name: "Bob", passwordHash },
   });
 
-  // Alice's public list with a category
   const aliceWorkList = await prisma.todoList.create({
-    data: {
-      title: "Work",
-      isPublic: true,
-      ownerId: alice.id,
-      categories: {
-        create: [{ name: "Design" }],
-      },
-    },
-    include: { categories: true },
+    data: { title: "Work", ownerId: alice.id },
   });
-
-  const designCategory = aliceWorkList.categories[0];
 
   await prisma.todo.createMany({
     data: [
-      {
-        title: "Write project brief",
-        listId: aliceWorkList.id,
-        categoryId: designCategory.id,
-        assignedToId: alice.id,
-      },
-      {
-        title: "Review mockups",
-        listId: aliceWorkList.id,
-        categoryId: designCategory.id,
-      },
+      { title: "Write project brief", listId: aliceWorkList.id },
+      { title: "Review mockups", listId: aliceWorkList.id },
       { title: "Send status update", listId: aliceWorkList.id },
     ],
   });
 
-  // Alice's private list
   const alicePersonalList = await prisma.todoList.create({
-    data: {
-      title: "Personal",
-      isPublic: false,
-      ownerId: alice.id,
-    },
+    data: { title: "Personal", ownerId: alice.id },
   });
 
   await prisma.todo.createMany({
@@ -65,13 +36,8 @@ async function main() {
     ],
   });
 
-  // Bob's public list
   const bobOssList = await prisma.todoList.create({
-    data: {
-      title: "OSS Contributions",
-      isPublic: true,
-      ownerId: bob.id,
-    },
+    data: { title: "OSS Contributions", ownerId: bob.id },
   });
 
   await prisma.todo.createMany({
@@ -82,13 +48,8 @@ async function main() {
     ],
   });
 
-  // Bob's private list
   const bobPrivateList = await prisma.todoList.create({
-    data: {
-      title: "Learning",
-      isPublic: false,
-      ownerId: bob.id,
-    },
+    data: { title: "Learning", ownerId: bob.id },
   });
 
   await prisma.todo.createMany({
@@ -99,15 +60,7 @@ async function main() {
     ],
   });
 
-  // Alice follows Bob
-  await prisma.follow.create({
-    data: {
-      followerId: alice.id,
-      followingId: bob.id,
-    },
-  });
-
-  console.log("Seeded: 2 users, 4 lists, 12 todos, 1 category, 1 follow");
+  console.log("Seeded: 2 users, 4 lists, 12 todos");
 }
 
 main()

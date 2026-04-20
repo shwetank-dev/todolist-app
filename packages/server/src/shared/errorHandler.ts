@@ -1,10 +1,10 @@
 import type { FastifyError, FastifyReply, FastifyRequest } from "fastify";
 import {
+  AuthenticationError,
   BadRequestError,
   ConflictError,
   ForbiddenError,
   NotFoundError,
-  UnauthenticatedError,
   ValidationError,
 } from "./errors.js";
 
@@ -28,7 +28,7 @@ export function errorHandler(
     });
   }
 
-  if (error instanceof UnauthenticatedError) {
+  if (error instanceof AuthenticationError) {
     return reply.status(401).send({
       error: "UNAUTHENTICATED",
       message: error.message,
@@ -65,6 +65,7 @@ export function errorHandler(
   }
 
   // Unexpected errors — don't leak internals
+  // console.error(error);
   reply.status(500).send({
     error: "INTERNAL_SERVER_ERROR",
     message: "Something went wrong",

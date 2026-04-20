@@ -1,6 +1,8 @@
-import app from "./app.js";
+import { buildApp } from "./app.js";
 import { env } from "./config/env.js";
 import { prisma } from "./infra/db.js";
+
+const app = buildApp({ logger: true });
 
 try {
   await prisma.$queryRaw`SELECT 1`;

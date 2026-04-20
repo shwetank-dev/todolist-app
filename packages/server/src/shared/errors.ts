@@ -12,7 +12,7 @@ export class ConflictError extends Error {
   }
 }
 
-export class UnauthenticatedError extends Error {
+export class AuthenticationError extends Error {
   constructor(message = "Unauthenticated") {
     super(message);
     this.name = "UnauthenticatedError";

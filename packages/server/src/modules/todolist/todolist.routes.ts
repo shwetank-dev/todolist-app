@@ -1,6 +1,8 @@
 import {
   type PaginatedResponse,
   PaginatedResponseSchema,
+  type PaginationQuery,
+  PaginationQuerySchema,
 } from "@todolist/shared/schemas/pagination.schema";
 import {
   type CreateTodoListInput,
@@ -14,39 +16,32 @@ import {
 } from "@todolist/shared/schemas/todolist.schema";
 import type { FastifyPluginAsync } from "fastify";
 import { toSchema } from "../../shared/schema.js";
-
-const mockList: TodoListDetailDTO = {
-  id: "1",
-  name: "My List",
-  isPublic: false,
-  createdBy: { id: "1", name: "Jane Doe" },
-  createdAt: new Date().toISOString(),
-  todos: [],
-  collaborators: [],
-  categories: [],
-};
-
-const mockSummary: TodoListSummaryDTO = {
-  id: "1",
-  name: "My List",
-  isPublic: false,
-  todoCount: 0,
-  createdBy: { id: "1", name: "Jane Doe" },
-  createdAt: new Date().toISOString(),
-};
+import {
+  createTodoList,
+  deleteTodoList,
+  getTodoList,
+  getTodoLists,
+  updateTodoList,
+} from "./todolist.controller.js";
 
 export const todoListRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.get<{ Reply: { 200: PaginatedResponse<TodoListSummaryDTO> } }>(
+  fastify.get<{
+    Querystring: PaginationQuery;
+    Reply: { 200: PaginatedResponse<TodoListSummaryDTO> };
+  }>(
     "/todolists",
     {
       schema: {
+        querystring: toSchema(PaginationQuerySchema),
         response: {
           200: toSchema(PaginatedResponseSchema(TodoListSummaryDTOSchema)),
         },
       },
     },
-    async (_request, _reply) => {
-      return { data: [mockSummary], nextCursor: null };
+    async (request) => {
+      const { cursor, limit } = request.query;
+      // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
+      return getTodoLists(request.user!.id, cursor, limit);
     },
   );
 
@@ -62,16 +57,8 @@ export const todoListRoutes: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request, reply) => {
-      const list: TodoListDetailDTO = {
-        id: crypto.randomUUID(),
-        name: request.body.name,
-        isPublic: request.body.isPublic ?? false,
-        createdBy: { id: "1", name: "Jane Doe" },
-        createdAt: new Date().toISOString(),
-        todos: [],
-        collaborators: [],
-        categories: [],
-      };
+      // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
+      const list = await createTodoList(request.body, request.user!.id);
       reply.status(201).send(list);
     },
   );
@@ -83,8 +70,9 @@ export const todoListRoutes: FastifyPluginAsync = async (fastify) => {
         response: { 200: toSchema(TodoListDetailDTOSchema) },
       },
     },
-    async (_request, _reply) => {
-      return mockList;
+    async (request) => {
+      // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
+      return getTodoList(request.params.id, request.user!.id);
     },
   );
 
@@ -100,14 +88,18 @@ export const todoListRoutes: FastifyPluginAsync = async (fastify) => {
         response: { 200: toSchema(TodoListDetailDTOSchema) },
       },
     },
-    async (request, _reply) => {
-      return { ...mockList, ...request.body };
+    async (request) => {
+      // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
+      return updateTodoList(request.params.id, request.body, request.user!.id);
     },
   );
 
   fastify.delete<{ Params: { id: string } }>(
     "/todolists/:id",
-    async (_request, reply) => {
+    {},
+    async (request, reply) => {
+      // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
+      await deleteTodoList(request.params.id, request.user!.id);
       reply.status(204).send();
     },
   );

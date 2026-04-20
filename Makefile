@@ -15,4 +15,13 @@ logs:
 clean:
 	docker rmi $(IMAGE)
 
-.PHONY: build up down logs clean
+fresh:
+	docker compose down -v && docker compose up --build
+
+psql:
+	psql postgres://postgres:postgres@localhost:5432/todolist
+
+psql-test:
+	psql postgres://postgres:postgres@localhost:5432/todolist_test
+
+.PHONY: build up down logs clean fresh psql psql-test

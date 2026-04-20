@@ -20,6 +20,8 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: todolist
+    volumes:
+      - ./scripts/init-local-db.sh:/docker-entrypoint-initdb.d/init-local-db.sh
     ports:
       - "5432:5432"
 

@@ -32,3 +32,16 @@ export const UpdateUserSchema = z.object({
 });
 
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
+
+export const AuthTokensSchema = z.object({
+  accessToken: z.string(),
+});
+
+export type AuthTokens = z.infer<typeof AuthTokensSchema>;
+
+export const CreateUserResponseSchema = z.object({
+  user: UserDTOSchema,
+  tokens: AuthTokensSchema,
+});
+
+export type CreateUserResponse = z.infer<typeof CreateUserResponseSchema>;

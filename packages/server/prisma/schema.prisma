@@ -8,93 +8,59 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String    @map("password_hash")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   lists         TodoList[]
-  memberships   TodoListMember[]
-  assignedTodos Todo[]           @relation("assignedTodos")
-  following     Follow[]         @relation("follower")
-  followers     Follow[]         @relation("following")
+  refreshTokens RefreshToken[]
 
   @@map("users")
 }
 
-model Follow {
-  followerId  String   @map("follower_id")
-  followingId String   @map("following_id")
-  createdAt   DateTime @default(now()) @map("created_at")
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  follower  User @relation("follower", fields: [followerId], references: [id])
-  following User @relation("following", fields: [followingId], references: [id])
-
-  @@id([followerId, followingId])
-  @@map("follows")
+  @@map("refresh_tokens")
 }
 
 model TodoList {
   id        String   @id @default(cuid())
   title     String
-  isPublic  Boolean  @default(false) @map("is_public")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   ownerId String   @map("owner_id")
   owner   User     @relation(fields: [ownerId], references: [id])
 
-  todos      Todo[]
-  categories Category[]
-  members    TodoListMember[]
-
-  @@map("todo_lists")
-}
-
-model TodoListMember {
-  userId    String   @map("user_id")
-  listId    String   @map("list_id")
-  role      String   @default("VIEWER") // OWNER | EDITOR | VIEWER
-  createdAt DateTime @default(now()) @map("created_at")
-
-  user User     @relation(fields: [userId], references: [id])
-  list TodoList @relation(fields: [listId], references: [id])
-
-  @@id([userId, listId])
-  @@map("todo_list_members")
-}
-
-model Category {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  listId String   @map("list_id")
-  list   TodoList @relation(fields: [listId], references: [id])
-
   todos Todo[]
 
-  @@map("categories")
+  @@index([ownerId])
+  @@map("todo_lists")
 }
 
 model Todo {
   id          String    @id @default(cuid())
   title       String
   isCompleted Boolean   @default(false) @map("is_completed")
+  dueDate     DateTime? @map("due_date")
   deletedAt   DateTime? @map("deleted_at")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  listId   String   @map("list_id")
-  list     TodoList @relation(fields: [listId], references: [id])
+  listId String   @map("list_id")
+  list   TodoList @relation(fields: [listId], references: [id])
 
-  categoryId String?   @map("category_id")
-  category   Category? @relation(fields: [categoryId], references: [id])
-
-  assignedToId String? @map("assigned_to_id")
-  assignedTo   User?   @relation("assignedTodos", fields: [assignedToId], references: [id])
-
+  @@index([listId])
+  @@index([listId, isCompleted])
   @@map("todos")
 }

@@ -1,3 +1,4 @@
 pnpm lint
 pnpm --filter server typecheck
 pnpm --filter shared typecheck
+pnpm --filter server test
