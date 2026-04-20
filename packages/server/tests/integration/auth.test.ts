@@ -53,6 +53,9 @@ describe("auth", () => {
     });
 
     expect(response.statusCode).toBe(401);
+    expect(response.json()).toEqual({
+      error: { code: "UNAUTHENTICATED", message: expect.any(String) },
+    });
   });
 
   it("GET /api/v1/users/me no token -> 401", async () => {
@@ -62,6 +65,9 @@ describe("auth", () => {
     });
 
     expect(response.statusCode).toBe(401);
+    expect(response.json()).toEqual({
+      error: { code: "UNAUTHENTICATED", message: expect.any(String) },
+    });
   });
 
   it("GET /api/v1/users/me invalid token → 401", async () => {
@@ -74,6 +80,9 @@ describe("auth", () => {
     });
 
     expect(response.statusCode).toBe(401);
+    expect(response.json()).toEqual({
+      error: { code: "UNAUTHENTICATED", message: expect.any(String) },
+    });
   });
 
   it("POST /api/v1/auth/login valid credentials → 200, returns access token", async () => {
@@ -152,5 +161,8 @@ describe("auth", () => {
     });
 
     expect(response.statusCode).toBe(401);
+    expect(response.json()).toEqual({
+      error: { code: "UNAUTHENTICATED", message: expect.any(String) },
+    });
   });
 });

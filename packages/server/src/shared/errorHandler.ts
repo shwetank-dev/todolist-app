@@ -1,73 +1,38 @@
 import type { FastifyError, FastifyReply, FastifyRequest } from "fastify";
-import {
-  AuthenticationError,
-  BadRequestError,
-  ConflictError,
-  ForbiddenError,
-  NotFoundError,
-  ValidationError,
-} from "./errors.js";
+import { AppError, ValidationError } from "./errors.js";
 
 export function errorHandler(
   error: FastifyError | Error,
-  _request: FastifyRequest,
+  request: FastifyRequest,
   reply: FastifyReply,
 ) {
+  // TODO: Fastify validation errors (Phase 2.3)
+
   if (error instanceof ValidationError) {
     return reply.status(400).send({
-      error: "VALIDATION_ERROR",
-      message: error.message,
-      fields: error.fields,
+      error: {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+      },
     });
   }
 
-  if (error instanceof BadRequestError) {
-    return reply.status(400).send({
-      error: "BAD_REQUEST",
-      message: error.message,
+  if (error instanceof AppError) {
+    return reply.status(error.statusCode).send({
+      error: {
+        code: error.code,
+        message: error.message,
+      },
     });
   }
 
-  if (error instanceof AuthenticationError) {
-    return reply.status(401).send({
-      error: "UNAUTHENTICATED",
-      message: error.message,
-    });
-  }
-
-  if (error instanceof ForbiddenError) {
-    return reply.status(403).send({
-      error: "FORBIDDEN",
-      message: error.message,
-    });
-  }
-
-  if (error instanceof NotFoundError) {
-    return reply.status(404).send({
-      error: "NOT_FOUND",
-      message: error.message,
-    });
-  }
-
-  if (error instanceof ConflictError) {
-    return reply.status(409).send({
-      error: "CONFLICT",
-      message: error.message,
-    });
-  }
-
-  // Fastify validation errors (schema validation failures)
-  if ("statusCode" in error && error.statusCode === 400) {
-    return reply.status(400).send({
-      error: "BAD_REQUEST",
-      message: error.message,
-    });
-  }
-
-  // Unexpected errors — don't leak internals
-  // console.error(error);
-  reply.status(500).send({
-    error: "INTERNAL_SERVER_ERROR",
-    message: "Something went wrong",
+  // Unexpected errors — log and return 500
+  request.log.error(error);
+  return reply.status(500).send({
+    error: {
+      code: "INTERNAL_ERROR",
+      message: "Something went wrong",
+    },
   });
 }
