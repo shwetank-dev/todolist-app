@@ -11,16 +11,14 @@ export const TodoDTOSchema = z.object({
 export type TodoDTO = z.infer<typeof TodoDTOSchema>;
 
 export const CreateTodoSchema = z.object({
-  title: z.string().min(1).max(500),
+  title: z.string().min(1, "Title cannot be empty").max(500, "Title too long"),
   dueDate: z.iso.datetime().nullable().optional(),
 });
 
 export type CreateTodoInput = z.infer<typeof CreateTodoSchema>;
 
-export const UpdateTodoSchema = z.object({
-  title: z.string().min(1).max(500).optional(),
+export const UpdateTodoSchema = CreateTodoSchema.partial().extend({
   completed: z.boolean().optional(),
-  dueDate: z.iso.datetime().nullable().optional(),
 });
 
 export type UpdateTodoInput = z.infer<typeof UpdateTodoSchema>;

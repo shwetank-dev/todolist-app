@@ -6,7 +6,6 @@ import {
 } from "@todolist/shared/schemas/user.schema";
 import type { FastifyPluginAsync } from "fastify";
 import { AuthenticationError } from "../../shared/errors.js";
-import { toSchema } from "../../shared/schema.js";
 import {
   loginUser,
   logoutUser,
@@ -28,9 +27,12 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Body: CreateUserInput }>(
     "/auth/register",
     {
+      config: {
+        rateLimit: { max: 10, timeWindow: "1 minute" },
+      },
       schema: {
-        body: toSchema(CreateUserSchema),
-        response: { 201: toSchema(CreateUserResponseSchema) },
+        body: CreateUserSchema,
+        response: { 201: CreateUserResponseSchema },
       },
     },
     async (request, reply) => {
@@ -46,8 +48,11 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post(
     "/auth/login",
     {
+      config: {
+        rateLimit: { max: 10, timeWindow: "1 minute" },
+      },
       schema: {
-        response: { 200: toSchema(AuthTokensSchema) },
+        response: { 200: AuthTokensSchema },
       },
     },
     async (request, reply) => {

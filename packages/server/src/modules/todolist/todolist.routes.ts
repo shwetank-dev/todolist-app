@@ -15,7 +15,7 @@ import {
   UpdateTodoListSchema,
 } from "@todolist/shared/schemas/todolist.schema";
 import type { FastifyPluginAsync } from "fastify";
-import { toSchema } from "../../shared/schema.js";
+import { z } from "zod";
 import {
   createTodoList,
   deleteTodoList,
@@ -32,9 +32,9 @@ export const todoListRoutes: FastifyPluginAsync = async (fastify) => {
     "/todolists",
     {
       schema: {
-        querystring: toSchema(PaginationQuerySchema),
+        querystring: PaginationQuerySchema,
         response: {
-          200: toSchema(PaginatedResponseSchema(TodoListSummaryDTOSchema)),
+          200: PaginatedResponseSchema(TodoListSummaryDTOSchema),
         },
       },
     },
@@ -52,8 +52,8 @@ export const todoListRoutes: FastifyPluginAsync = async (fastify) => {
     "/todolists",
     {
       schema: {
-        body: toSchema(CreateTodoListSchema),
-        response: { 201: toSchema(TodoListDetailDTOSchema) },
+        body: CreateTodoListSchema,
+        response: { 201: TodoListDetailDTOSchema },
       },
     },
     async (request, reply) => {
@@ -67,7 +67,8 @@ export const todoListRoutes: FastifyPluginAsync = async (fastify) => {
     "/todolists/:id",
     {
       schema: {
-        response: { 200: toSchema(TodoListDetailDTOSchema) },
+        params: z.object({ id: z.string() }),
+        response: { 200: TodoListDetailDTOSchema },
       },
     },
     async (request) => {
@@ -84,8 +85,9 @@ export const todoListRoutes: FastifyPluginAsync = async (fastify) => {
     "/todolists/:id",
     {
       schema: {
-        body: toSchema(UpdateTodoListSchema),
-        response: { 200: toSchema(TodoListDetailDTOSchema) },
+        params: z.object({ id: z.string() }),
+        body: UpdateTodoListSchema,
+        response: { 200: TodoListDetailDTOSchema },
       },
     },
     async (request) => {
@@ -96,7 +98,11 @@ export const todoListRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.delete<{ Params: { id: string } }>(
     "/todolists/:id",
-    {},
+    {
+      schema: {
+        params: z.object({ id: z.string() }),
+      },
+    },
     async (request, reply) => {
       // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
       await deleteTodoList(request.params.id, request.user!.id);

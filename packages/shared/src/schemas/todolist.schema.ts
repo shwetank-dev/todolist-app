@@ -20,13 +20,11 @@ export const TodoListDetailDTOSchema = z.object({
 export type TodoListDetailDTO = z.infer<typeof TodoListDetailDTOSchema>;
 
 export const CreateTodoListSchema = z.object({
-  name: z.string().min(1).max(255),
+  name: z.string().min(1, "Name cannot be empty").max(255, "Name too long"),
 });
 
 export type CreateTodoListInput = z.infer<typeof CreateTodoListSchema>;
 
-export const UpdateTodoListSchema = z.object({
-  name: z.string().min(1).max(255).optional(),
-});
+export const UpdateTodoListSchema = CreateTodoListSchema.partial();
 
 export type UpdateTodoListInput = z.infer<typeof UpdateTodoListSchema>;

@@ -5,7 +5,6 @@ import {
   UserDTOSchema,
 } from "@todolist/shared/schemas/user.schema";
 import type { FastifyPluginAsync } from "fastify";
-import { toSchema } from "../../shared/schema.js";
 import { getMe } from "./user.controller.js";
 
 export const userRoutes: FastifyPluginAsync = async (fastify) => {
@@ -13,7 +12,7 @@ export const userRoutes: FastifyPluginAsync = async (fastify) => {
     "/users/me",
     {
       schema: {
-        response: { 200: toSchema(UserDTOSchema) },
+        response: { 200: UserDTOSchema },
       },
     },
     async (request, reply) => {

@@ -15,7 +15,12 @@ export type PaginatedResponse<T> = {
 
 export const PaginationQuerySchema = z.object({
   cursor: z.string().optional(),
-  limit: z.number().int().min(1).max(100).default(20),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1, "Limit must be at least 1")
+    .max(100, "Limit cannot exceed 100")
+    .default(20),
 });
 
 export type PaginationQuery = z.infer<typeof PaginationQuerySchema>;

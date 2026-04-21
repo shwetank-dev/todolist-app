@@ -6,7 +6,18 @@ export function errorHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  // TODO: Fastify validation errors (Phase 2.3)
+  if ("validation" in error && error.validation) {
+    return reply.status(400).send({
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Invalid input",
+        details: error.validation.map((v) => ({
+          field: v.instancePath.replace("/", "") || v.params?.missingProperty,
+          message: v.message,
+        })),
+      },
+    });
+  }
 
   if (error instanceof ValidationError) {
     return reply.status(400).send({

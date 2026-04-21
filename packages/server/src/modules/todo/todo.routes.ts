@@ -1,6 +1,8 @@
 import {
   type PaginatedResponse,
   PaginatedResponseSchema,
+  type PaginationQuery,
+  PaginationQuerySchema,
 } from "@todolist/shared/schemas/pagination.schema";
 import {
   type CreateTodoInput,
@@ -11,7 +13,7 @@ import {
   UpdateTodoSchema,
 } from "@todolist/shared/schemas/todo.schema";
 import type { FastifyPluginAsync } from "fastify";
-import { toSchema } from "../../shared/schema.js";
+import { z } from "zod";
 import {
   createTodo,
   deleteTodo,
@@ -23,12 +25,15 @@ import {
 export const todoRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get<{
     Params: { id: string };
+    Querystring: PaginationQuery;
     Reply: { 200: PaginatedResponse<TodoDTO> };
   }>(
     "/todolists/:id/todos",
     {
       schema: {
-        response: { 200: toSchema(PaginatedResponseSchema(TodoDTOSchema)) },
+        params: z.object({ id: z.string() }),
+        querystring: PaginationQuerySchema,
+        response: { 200: PaginatedResponseSchema(TodoDTOSchema) },
       },
     },
     async (request) => {
@@ -45,8 +50,9 @@ export const todoRoutes: FastifyPluginAsync = async (fastify) => {
     "/todolists/:id/todos",
     {
       schema: {
-        body: toSchema(CreateTodoSchema),
-        response: { 201: toSchema(TodoDTOSchema) },
+        params: z.object({ id: z.string() }),
+        body: CreateTodoSchema,
+        response: { 201: TodoDTOSchema },
       },
     },
     async (request, reply) => {
@@ -65,7 +71,12 @@ export const todoRoutes: FastifyPluginAsync = async (fastify) => {
     Reply: { 200: TodoDTO };
   }>(
     "/todolists/:id/todos/:todoId",
-    { schema: { response: { 200: toSchema(TodoDTOSchema) } } },
+    {
+      schema: {
+        params: z.object({ id: z.string(), todoId: z.string() }),
+        response: { 200: TodoDTOSchema },
+      },
+    },
     async (request) => {
       // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
       return getTodo(request.params.todoId, request.user!.id);
@@ -80,8 +91,9 @@ export const todoRoutes: FastifyPluginAsync = async (fastify) => {
     "/todolists/:id/todos/:todoId",
     {
       schema: {
-        body: toSchema(UpdateTodoSchema),
-        response: { 200: toSchema(TodoDTOSchema) },
+        params: z.object({ id: z.string(), todoId: z.string() }),
+        body: UpdateTodoSchema,
+        response: { 200: TodoDTOSchema },
       },
     },
     async (request) => {
@@ -92,6 +104,11 @@ export const todoRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.delete<{ Params: { id: string; todoId: string } }>(
     "/todolists/:id/todos/:todoId",
+    {
+      schema: {
+        params: z.object({ id: z.string(), todoId: z.string() }),
+      },
+    },
     async (request, reply) => {
       // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
       await deleteTodo(request.params.todoId, request.user!.id);
