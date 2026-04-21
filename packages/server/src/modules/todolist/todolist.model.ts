@@ -8,6 +8,7 @@ import type {
   Todo as PrismaTodo,
   TodoList as PrismaTodoList,
 } from "../../generated/prisma/client.js";
+import { cache } from "../../infra/cache.js";
 import { prisma } from "../../infra/db.js";
 import { ForbiddenError, NotFoundError } from "../../shared/errors.js";
 
@@ -21,6 +22,10 @@ const fullInclude = {
 
 export class TodoList {
   constructor(private readonly _data: FullTodoList) {}
+
+  private static cacheKey(userId: string): string {
+    return `todolist-app:todolists:${userId}`;
+  }
 
   static async checkOwnership(id: string, userId: string): Promise<void> {
     const row = await prisma.todoList.findUnique({
@@ -43,6 +48,7 @@ export class TodoList {
       },
       include: fullInclude,
     });
+    await cache.del(TodoList.cacheKey(ownerId));
     return new TodoList(row);
   }
 
@@ -60,6 +66,15 @@ export class TodoList {
     cursor?: string,
     limit = 20,
   ): Promise<{ data: TodoListSummaryDTO[]; nextCursor: string | null }> {
+    const cacheKey = TodoList.cacheKey(userId);
+    if (!cursor) {
+      const cached = await cache.get<{
+        data: TodoListSummaryDTO[];
+        nextCursor: string | null;
+      }>(cacheKey);
+      if (cached) return cached;
+    }
+
     const rows = await prisma.todoList.findMany({
       take: limit + 1,
       ...(cursor && { cursor: { id: cursor }, skip: 1 }),
@@ -76,7 +91,7 @@ export class TodoList {
     const hasNext = rows.length > limit;
     const page = hasNext ? rows.slice(0, limit) : rows;
 
-    return {
+    const result = {
       data: page.map((r) => ({
         id: r.id,
         name: r.title,
@@ -85,6 +100,12 @@ export class TodoList {
       })),
       nextCursor: hasNext ? page[page.length - 1].id : null,
     };
+
+    if (!cursor) {
+      await cache.set(cacheKey, result, 60);
+    }
+
+    return result;
   }
 
   async update(input: UpdateTodoListInput): Promise<void> {
@@ -96,10 +117,12 @@ export class TodoList {
       include: fullInclude,
     });
     Object.assign(this._data, updated);
+    await cache.del(TodoList.cacheKey(this._data.ownerId));
   }
 
   async delete(): Promise<void> {
     await prisma.todoList.delete({ where: { id: this._data.id } });
+    await cache.del(TodoList.cacheKey(this._data.ownerId));
   }
 
   getDetailDTO(): TodoListDetailDTO {
