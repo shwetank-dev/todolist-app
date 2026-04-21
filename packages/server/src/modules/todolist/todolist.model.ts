@@ -9,7 +9,7 @@ import type {
   TodoList as PrismaTodoList,
 } from "../../generated/prisma/client.js";
 import { prisma } from "../../infra/db.js";
-import { ForbiddenError } from "../../shared/errors.js";
+import { ForbiddenError, NotFoundError } from "../../shared/errors.js";
 
 type FullTodoList = PrismaTodoList & {
   todos: PrismaTodo[];
@@ -22,10 +22,14 @@ const fullInclude = {
 export class TodoList {
   constructor(private readonly _data: FullTodoList) {}
 
-  assertCanModify(userId: string): void {
-    if (this._data.ownerId !== userId) {
+  static async checkOwnership(id: string, userId: string): Promise<void> {
+    const row = await prisma.todoList.findUnique({
+      where: { id },
+      select: { ownerId: true },
+    });
+    if (!row) throw new NotFoundError("TodoList not found");
+    if (row.ownerId !== userId)
       throw new ForbiddenError("You do not own this list");
-    }
   }
 
   static async create(

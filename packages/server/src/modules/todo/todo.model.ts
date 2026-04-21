@@ -33,13 +33,32 @@ export class Todo {
     return new Todo(row);
   }
 
-  static async findAllByListId(listId: string): Promise<Todo[]> {
+  static async findManyByListId(
+    listId: string,
+    cursor?: string,
+    limit = 20,
+  ): Promise<{ todos: Todo[]; nextCursor: string | null }> {
     const rows = await prisma.todo.findMany({
+      take: limit + 1,
+      ...(cursor && { cursor: { id: cursor }, skip: 1 }),
       where: { listId },
-      include: fullInclude,
+      select: {
+        id: true,
+        title: true,
+        isCompleted: true,
+        dueDate: true,
+        createdAt: true,
+      },
       orderBy: { createdAt: "asc" },
     });
-    return rows.map((row) => new Todo(row));
+
+    const hasNext = rows.length > limit;
+    const page = hasNext ? rows.slice(0, limit) : rows;
+
+    return {
+      todos: page.map((row) => new Todo(row as FullTodo)),
+      nextCursor: hasNext ? page[page.length - 1].id : null,
+    };
   }
 
   static async create(input: CreateTodoInput, listId: string): Promise<Todo> {

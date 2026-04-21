@@ -32,10 +32,21 @@ export async function loginTestUser(app: FastifyInstance, email: string) {
   return response.json().accessToken as string;
 }
 
+export async function createTestTodo(
+  listId: string,
+  title = "Test Todo",
+  createdAt?: Date,
+) {
+  return prisma.todo.create({
+    data: { title, listId, ...(createdAt && { createdAt }) },
+  });
+}
+
 export async function cleanupUser(email: string) {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) return;
   await prisma.refreshToken.deleteMany({ where: { userId: user.id } });
+  await prisma.todo.deleteMany({ where: { list: { ownerId: user.id } } });
   await prisma.todoList.deleteMany({ where: { ownerId: user.id } });
   await prisma.user.delete({ where: { id: user.id } });
 }

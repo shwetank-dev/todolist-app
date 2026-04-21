@@ -14,9 +14,9 @@ export const getTodoLists = async (
 };
 
 export const getTodoList = async (id: string, userId: string) => {
+  await TodoList.checkOwnership(id, userId);
   const list = await TodoList.findById(id);
   if (!list) throw new NotFoundError("TodoList not found");
-  list.assertCanModify(userId);
   return list.getDetailDTO();
 };
 
@@ -33,16 +33,16 @@ export const updateTodoList = async (
   input: UpdateTodoListInput,
   userId: string,
 ) => {
+  await TodoList.checkOwnership(id, userId);
   const list = await TodoList.findById(id);
   if (!list) throw new NotFoundError("TodoList not found");
-  list.assertCanModify(userId);
   await list.update(input);
   return list.getDetailDTO();
 };
 
 export const deleteTodoList = async (id: string, userId: string) => {
+  await TodoList.checkOwnership(id, userId);
   const list = await TodoList.findById(id);
   if (!list) throw new NotFoundError("TodoList not found");
-  list.assertCanModify(userId);
   await list.delete();
 };

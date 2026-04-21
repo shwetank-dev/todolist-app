@@ -37,8 +37,13 @@ export const todoRoutes: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request) => {
-      // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
-      return getTodosForList(request.params.id, request.user!.id);
+      return getTodosForList(
+        request.params.id,
+        // biome-ignore lint/style/noNonNullAssertion: requireAuth guarantees user is set
+        request.user!.id,
+        request.query.cursor,
+        request.query.limit,
+      );
     },
   );
 

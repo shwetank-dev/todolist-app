@@ -1,4 +1,5 @@
 pnpm lint
 pnpm --filter server typecheck
 pnpm --filter shared typecheck
+pnpm --filter @todolist/shared build
 pnpm --filter server test

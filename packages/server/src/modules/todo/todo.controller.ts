@@ -6,12 +6,19 @@ import { NotFoundError } from "../../shared/errors.js";
 import { TodoList } from "../todolist/todolist.model.js";
 import { Todo } from "./todo.model.js";
 
-export const getTodosForList = async (listId: string, userId: string) => {
-  const list = await TodoList.findById(listId);
-  if (!list) throw new NotFoundError("TodoList not found");
-  list.assertCanModify(userId);
-  const todos = await Todo.findAllByListId(listId);
-  return { data: todos.map((t) => t.toDTO()), nextCursor: null };
+export const getTodosForList = async (
+  listId: string,
+  userId: string,
+  cursor?: string,
+  limit?: number,
+) => {
+  await TodoList.checkOwnership(listId, userId);
+  const { todos, nextCursor } = await Todo.findManyByListId(
+    listId,
+    cursor,
+    limit,
+  );
+  return { data: todos.map((t) => t.toDTO()), nextCursor };
 };
 
 export const getTodo = async (id: string, userId: string) => {
@@ -26,9 +33,7 @@ export const createTodo = async (
   input: CreateTodoInput,
   userId: string,
 ) => {
-  const list = await TodoList.findById(listId);
-  if (!list) throw new NotFoundError("TodoList not found");
-  list.assertCanModify(userId);
+  await TodoList.checkOwnership(listId, userId);
   const todo = await Todo.create(input, listId);
   return todo.toDTO();
 };
