@@ -1,6 +1,6 @@
+import { prisma } from "@todolist/shared/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildApp } from "../../src/app.js";
-import { prisma } from "../../src/infra/db.js";
 import {
   cleanupUser,
   createTestTodoList,

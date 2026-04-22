@@ -1,3 +1,4 @@
+import { prisma } from "@todolist/shared/db";
 import type {
   CreateTodoListInput,
   TodoListDetailDTO,
@@ -9,7 +10,6 @@ import type {
   TodoList as PrismaTodoList,
 } from "../../generated/prisma/client.js";
 import { cache } from "../../infra/cache.js";
-import { prisma } from "../../infra/db.js";
 import { ForbiddenError, NotFoundError } from "../../shared/errors.js";
 
 type FullTodoList = PrismaTodoList & {

@@ -5,13 +5,13 @@ interface FullAuthTokens {
   refreshToken: string;
 }
 
+import { prisma } from "@todolist/shared/db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {
   Prisma,
   type User as PrismaUser,
 } from "../../generated/prisma/client.js";
-import { prisma } from "../../infra/db.js";
 import { ConflictError } from "../../shared/errors.js";
 
 interface CreateUserData {

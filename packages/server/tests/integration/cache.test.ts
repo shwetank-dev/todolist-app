@@ -1,3 +1,4 @@
+import { prisma } from "@todolist/shared/db";
 import {
   afterAll,
   beforeAll,
@@ -9,7 +10,6 @@ import {
 } from "vitest";
 import { buildApp } from "../../src/app.js";
 import { cache } from "../../src/infra/cache.js";
-import { prisma } from "../../src/infra/db.js";
 import { cleanupUser, createTestUser, loginTestUser } from "../fixtures.js";
 
 describe("caching", () => {

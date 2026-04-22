@@ -1,6 +1,6 @@
+import { prisma } from "@todolist/shared/db";
 import bcrypt from "bcrypt";
 import type { FastifyInstance } from "fastify";
-import { prisma } from "../src/infra/db.js";
 
 const TEST_PASSWORD = "password123";
 

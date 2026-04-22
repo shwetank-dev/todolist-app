@@ -1,7 +1,7 @@
+import { prisma } from "@todolist/shared/db";
 import { buildApp } from "./app.js";
 import { env } from "./config/env.js";
 import { cache } from "./infra/cache.js";
-import { prisma } from "./infra/db.js";
 
 const app = buildApp({ logger: true });
 

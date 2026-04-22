@@ -5,7 +5,10 @@ import pg from "pg";
 
 export async function setup() {
   dotenv.config({ path: path.resolve(process.cwd(), ".env.test") });
-  execSync("pnpm prisma migrate deploy", { stdio: "inherit" });
+  execSync(
+    "pnpm --filter @todolist/shared exec prisma migrate deploy --config prisma.config.ts",
+    { stdio: "inherit" },
+  );
 }
 
 export async function teardown() {

@@ -21,8 +21,8 @@ jobs:
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: pnpm biome check .
+      - run: pnpm --filter @todolist/shared exec prisma generate --config prisma.config.ts
       - run: pnpm --filter shared build
-      - run: pnpm --filter server exec prisma generate
       - run: pnpm --filter server typecheck
 
   test:
@@ -59,8 +59,8 @@ jobs:
           node-version: 24
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @todolist/shared exec prisma generate --config prisma.config.ts
       - run: pnpm --filter shared build
-      - run: pnpm --filter server exec prisma generate
       - run: pnpm --filter server test
 
   docker:

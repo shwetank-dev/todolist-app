@@ -17,16 +17,16 @@ COPY packages/server/package.json ./packages/server/
 COPY packages/shared/package.json ./packages/shared/
 RUN pnpm install --frozen-lockfile
 
-# Build the shared package first — server imports from its dist/.
-COPY packages/shared ./packages/shared
+# Copy shared source and prisma schema, then generate client, then build.
+COPY packages/shared/prisma ./packages/shared/prisma
+COPY packages/shared/prisma.config.ts ./packages/shared/
+COPY packages/shared/tsconfig.json ./packages/shared/
+COPY packages/shared/src ./packages/shared/src
+RUN pnpm --filter @todolist/shared exec prisma generate --config prisma.config.ts
 RUN pnpm --filter @todolist/shared run build
 
-# Copy schema and config, then generate the Prisma client.
-# Must happen before copying src/ — generated files land in src/generated/prisma.
+# Copy server source and compile TypeScript.
 COPY packages/server/tsconfig.json ./packages/server/
-COPY packages/server/prisma ./packages/server/prisma
-COPY packages/server/prisma.config.ts ./packages/server/
-RUN pnpm --filter server exec prisma generate
 
 # Copy source and compile TypeScript.
 COPY packages/server/src ./packages/server/src
@@ -36,7 +36,7 @@ RUN pnpm --filter server exec tsc
 # Stage 2: runtime
 # Installs only production dependencies and copies
 # the compiled JS from the builder stage.
-# No devDeps, no source files, no Prisma CLI.
+# No devDeps, no source files.
 # ─────────────────────────────────────────────
 FROM node:24-alpine
 RUN corepack enable && corepack prepare pnpm@10.30.0 --activate
@@ -54,12 +54,12 @@ COPY --from=builder /app/packages/server/dist ./packages/server/dist
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 
 # Copy Prisma config and migrations needed for prisma migrate deploy at runtime.
-COPY packages/server/prisma.config.ts ./packages/server/
-COPY packages/server/prisma/schema.prisma ./packages/server/prisma/
-COPY packages/server/prisma/migrations ./packages/server/prisma/migrations
+COPY packages/shared/prisma.config.ts ./packages/shared/
+COPY packages/shared/prisma/schema.prisma ./packages/shared/prisma/
+COPY packages/shared/prisma/migrations ./packages/shared/prisma/migrations
 
 WORKDIR /app/packages/server
 EXPOSE 3000
-# Run migrations then start the server.
+# Run migrations from shared (where schema lives), then start the server.
 # Shell form is required here to support the && operator.
-CMD ["sh", "-c", "/app/node_modules/.pnpm/node_modules/.bin/prisma migrate deploy && exec node /app/packages/server/dist/server.js"] 
+CMD ["sh", "-c", "cd /app/packages/shared && /app/node_modules/.pnpm/node_modules/.bin/prisma migrate deploy --config prisma.config.ts && cd /app/packages/server && exec node dist/server.js"] 

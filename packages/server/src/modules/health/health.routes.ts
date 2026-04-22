@@ -1,7 +1,7 @@
+import { prisma } from "@todolist/shared/db";
 import type { FastifyPluginAsync } from "fastify";
 import z from "zod";
 import { cache } from "../../infra/cache.js";
-import { prisma } from "../../infra/db.js";
 
 const HealthResponseSchema = z.object({
   status: z.string(),

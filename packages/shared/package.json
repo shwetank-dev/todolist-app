@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "exports": {
-    "./schemas/*": "./dist/schemas/*.js"
+    "./schemas/*": "./dist/schemas/*.js",
+    "./db": "./dist/infra/db.js"
   },
   "scripts": {
     "build": "tsc",
@@ -11,6 +12,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
+    "dotenv": "^17.4.2",
+    "prisma": "^7.7.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
