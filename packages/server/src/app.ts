@@ -12,6 +12,7 @@ import { healthRoutes } from "./modules/health/health.routes.js";
 import { todoRoutes } from "./modules/todo/todo.routes.js";
 import { todoListRoutes } from "./modules/todolist/todolist.routes.js";
 import { userRoutes } from "./modules/user/user.routes.js";
+import { webhookRoutes } from "./modules/webhooks/webhooks.routes.js";
 import { errorHandler } from "./shared/errorHandler.js";
 
 export function buildApp({ logger = false }: { logger?: boolean } = {}) {
@@ -30,6 +31,7 @@ export function buildApp({ logger = false }: { logger?: boolean } = {}) {
   // public routes
   app.register(healthRoutes);
   app.register(authRoutes, { prefix: "/api/v1" });
+  app.register(webhookRoutes, { prefix: "/wh" });
 
   // protected routes
   app.register(async (protectedApp) => {

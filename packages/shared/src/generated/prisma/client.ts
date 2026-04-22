@@ -61,3 +61,13 @@ export type TodoList = Prisma.TodoListModel
  * 
  */
 export type Todo = Prisma.TodoModel
+/**
+ * Model WebhookEvent
+ * 
+ */
+export type WebhookEvent = Prisma.WebhookEventModel
+/**
+ * Model PointDelta
+ * 
+ */
+export type PointDelta = Prisma.PointDeltaModel

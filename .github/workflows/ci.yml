@@ -24,6 +24,7 @@ jobs:
       - run: pnpm --filter @todolist/shared exec prisma generate --config prisma.config.ts
       - run: pnpm --filter shared build
       - run: pnpm --filter server typecheck
+      - run: pnpm --filter @todolist/worker typecheck
 
   test:
     needs: check
@@ -62,6 +63,7 @@ jobs:
       - run: pnpm --filter @todolist/shared exec prisma generate --config prisma.config.ts
       - run: pnpm --filter shared build
       - run: pnpm --filter server test
+      - run: pnpm --filter @todolist/worker test
 
   docker:
     needs: [check, test]
@@ -69,3 +71,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker build -t todolist-api -f packages/server/Dockerfile .
+      - run: docker build -t todolist-worker -f packages/worker/Dockerfile .

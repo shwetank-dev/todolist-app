@@ -64,3 +64,23 @@ model Todo {
   @@index([listId, isCompleted])
   @@map("todos")
 }
+
+model WebhookEvent {
+  id        String   @id @default(cuid())
+  type      String
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("webhook_events")
+}
+
+model PointDelta {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  taskId    String   @map("task_id")
+  points    Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, taskId])
+  @@map("point_deltas")
+}
