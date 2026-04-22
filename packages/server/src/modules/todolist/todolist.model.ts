@@ -1,3 +1,7 @@
+import type {
+  Todo as PrismaTodo,
+  TodoList as PrismaTodoList,
+} from "@todolist/shared/client";
 import { prisma } from "@todolist/shared/db";
 import type {
   CreateTodoListInput,
@@ -5,10 +9,6 @@ import type {
   TodoListSummaryDTO,
   UpdateTodoListInput,
 } from "@todolist/shared/schemas/todolist.schema";
-import type {
-  Todo as PrismaTodo,
-  TodoList as PrismaTodoList,
-} from "../../generated/prisma/client.js";
 import { cache } from "../../infra/cache.js";
 import { ForbiddenError, NotFoundError } from "../../shared/errors.js";
 

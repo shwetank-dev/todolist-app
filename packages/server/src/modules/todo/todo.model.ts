@@ -1,10 +1,10 @@
+import type { Todo as PrismaTodo } from "@todolist/shared/client";
 import { prisma } from "@todolist/shared/db";
 import type {
   CreateTodoInput,
   TodoDTO,
   UpdateTodoInput,
 } from "@todolist/shared/schemas/todo.schema";
-import type { Todo as PrismaTodo } from "../../generated/prisma/client.js";
 import { ForbiddenError } from "../../shared/errors.js";
 
 type FullTodo = PrismaTodo & {
